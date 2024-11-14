@@ -1,0 +1,94 @@
+<script>
+    $('#uploadFileModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);  // Button that triggered the modal
+        var folderId = button.data('folder-id');  // Extract folder ID from data-* attribute
+        var actionUrl = "{% url 'upload' 0 %}".replace('0', folderId);  // Generate URL with folder ID
+        $('#uploadForm').attr('action', actionUrl);  // Set form action
+    });
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        const renameBtns = document.querySelectorAll('.rename-btn');
+        const renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
+        const newNameInput = document.getElementById('newName');
+        const itemIdInput = document.getElementById('itemId');
+        const targetTypeInput = document.getElementById('targetType');
+    
+        // Open modal on rename button click
+        renameBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const itemId = this.getAttribute('data-item-id');
+                const targetType = this.getAttribute('data-target-type'); // "file" or "folder"
+                
+                itemIdInput.value = itemId;
+                targetTypeInput.value = targetType;
+                newNameInput.value = '';
+                
+                renameModal.show(); // Open modal
+            });
+        });
+    
+        // Save rename action
+        document.getElementById('saveRename').addEventListener('click', function () {
+            const itemId = itemIdInput.value;
+            const targetType = targetTypeInput.value;
+            const newName = newNameInput.value.trim();
+    
+            if (newName === '') {
+                alert("Name cannot be empty");
+                return;
+            }
+    
+            const url = targetType === 'folder'
+                ? `{% url 'rename_folder' 0 %}`.replace('0', itemId)
+                : `{% url 'rename_file' 0 %}`.replace('0', itemId);
+    
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({ new_name: newName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (targetType === 'folder') {
+                        document.querySelector(`.folder-name[data-folder-id="${itemId}"]`).textContent = newName;
+                    } else {
+                        document.querySelector(`.file-name[data-file-id="${itemId}"]`).textContent = newName;
+                    }
+                    renameModal.hide();
+                } else {
+                    alert(data.error || "An error occurred.");
+                }
+            })
+            .catch(error => console.error("Rename error:", error));
+        });
+    });
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        //handle deleting
+        document.querySelectorAll('.delete-confirm').forEach(button => {
+            button.addEventListener('click', function (event) {
+                const itemName = this.getAttribute('data-name');
+                const confirmDelete = confirm(`Are you sure you want to delete "${itemName}"?`);
+                if (!confirmDelete) {
+                    event.preventDefault(); // Cancel the delete action if not confirmed
+                }
+            });
+        });
+        
+        //handle search
+        const query = "{{ query }}";
+        if (query) {
+            document.querySelectorAll('.file-name').forEach(name => {
+                const regex = new RegExp(query, "gi");
+                name.innerHTML = name.textContent.replace(regex, match => `<mark>${match}</mark>`);
+            });
+        }
+    });
+    
+    
+</script>
