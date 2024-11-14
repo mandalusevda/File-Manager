@@ -1,0 +1,21 @@
+{% extends "myfiles/base.html" %}
+<div class="file-details">
+    <h5>{{ file.name }}</h5>
+    <p><strong>Uploaded on:</strong> {{ file.created_at|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Last updated:</strong> {{ file.updated_at|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Size:</strong> {{ file.size }} bytes</p>
+
+    <!-- Thumbnail if it's an image or video preview if it's a video -->
+    {% if file.file.url %}
+        {% if file.file.name.endswith:".jpg" or file.file.name.endswith:".png" or file.file.name.endswith:".jpeg" %}
+            <img src="{{ file.file.url }}" alt="{{ file.name }}" class="img-thumbnail" style="max-width: 100%;">
+        {% elif file.file.name.endswith:".mp4" or file.file.name.endswith:".webm" %}
+            <video controls style="max-width: 100%;">
+                <source src="{{ file.file.url }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        {% endif %}
+    {% endif %}
+    
+    <p><strong>File Path:</strong> <a href="{{ file.file.url }}" download>{{ file.file.url }}</a></p>
+</div>
