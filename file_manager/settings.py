@@ -47,6 +47,8 @@ INSTALLED_APPS = [
 INSTALLED_APPS.append('rest_framework')
 INSTALLED_APPS.append('rest_framework_simplejwt')
 INSTALLED_APPS.append('simple_history')
+INSTALLED_APPS.append('drf_spectacular')
+INSTALLED_APPS.append('django_filters')
 
 #custom apps
 INSTALLED_APPS.append('myfiles')
@@ -144,3 +146,25 @@ LOGOUT_REDIRECT_URL = '/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ############## #
+# REST FRAMEWORK #
+# ############## #
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    # Versioning
+    # 'DEFAULT_VERSIONING_CLASS': 'painless.api.utils.versioning.AcceptHeaderVersioningRequired',
+    # 'ALLOWED_VERSIONS': ('1.0', '1.1'),
+    # Pagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
