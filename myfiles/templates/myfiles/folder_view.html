@@ -19,8 +19,7 @@
 <body style="background-color:lavender">
 <div class="container mt-4">
     {% if user.is_authenticated %}
-        <h2>My Library</h2> <br><br>
-        
+        <a href="{% url 'create_folder' folder_id=folder.id %}" class="btn btn-primary mb-3">Create Folder</a>
         <form method="get" action="{% url 'library_view' %}">
             <div class="input-group mb-3">
                 <input type="text" name="query" class="form-control" placeholder="Search files..." value="{{ query }}">

@@ -128,25 +128,24 @@ def create_folder(request, folder_id=None):
         form = FolderForm(request.POST)
         
         if form.is_valid():
-            # Extract folder name from the form
             folder_name = form.cleaned_data.get('name')
 
             # Default to "New Folder" if the name is empty
             if not folder_name:
                 folder_name = "New Folder"
 
-            # Ensure the folder name is unique within the user's folders, including parent folder context
+            # Ensure the folder name is unique
             original_name = folder_name
             counter = 1
             while Folder.objects.filter(name=folder_name, owner=request.user, parent=parent_folder).exists():
                 folder_name = f"{original_name} ({counter})"
                 counter += 1
             
-            # Create the new folder and associate it with the current user and the parent folder (if any)
+            # Create the new folder
             new_folder = form.save(commit=False)
             new_folder.owner = request.user
             new_folder.parent = parent_folder
-            new_folder.name = folder_name  # Set the final folder name after ensuring uniqueness
+            new_folder.name = folder_name
             new_folder.save()
 
             # Redirect to the folder view page
