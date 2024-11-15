@@ -10,7 +10,6 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
@@ -36,7 +35,7 @@ def register(request):
 
 @login_required
 def HomeView(request):
-    root_folders = Folder.objects.filter(owner=request.user, parent=None)
+    root_folders = Folder.objects.filter(owner=request.user, parent=None).select_related('parent')
     return render(request, 'myfiles/home.html', {'folders': root_folders})
 
 @login_required
@@ -72,8 +71,8 @@ def file_details(request, file_id):
 def view_folder(request, folder_id=None):
     if folder_id is None:
         folder = None
-        subfolders = Folder.objects.filter(parent=None, owner=request.user)
-        files = File.objects.filter(folder=None, owner=request.user)
+        subfolders = Folder.objects.filter(parent=None, owner=request.user).select_related('parent')
+        files = File.objects.filter(folder=None, owner=request.user).select_related('folder', 'owner')
     else:
         folder = get_object_or_404(Folder, id=folder_id, owner=request.user)
         subfolders = Folder.objects.filter(parent=folder)
@@ -97,12 +96,6 @@ def view_folder(request, folder_id=None):
         'files': files,
         'breadcrumbs': breadcrumbs,
     })
-
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Folder
-from .forms import FolderForm
 
 @login_required
 def create_folder(request, folder_id=None):
@@ -204,6 +197,7 @@ def rename_folder(request, folder_id):
     
 @login_required
 def library_view(request):
+    # view for searching items
     query = request.GET.get('query', '')
     folders = Folder.objects.filter(owner=request.user)
     if query:
