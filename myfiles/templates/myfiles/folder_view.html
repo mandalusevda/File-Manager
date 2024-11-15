@@ -93,7 +93,50 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% if subfolders.has_other_pages %}
+            <nav aria-label="Folder pagination">
+                <ul class="pagination">
+                    {% if subfolders.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?folder_page={{ subfolders.previous_page_number }}{% if files.number %}&file_page={{ files.number }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for num in subfolders.paginator.page_range %}
+                        <li class="page-item {% if subfolders.number == num %}active{% endif %}">
+                            <a class="page-link" href="?folder_page={{ num }}{% if files.number %}&file_page={{ files.number }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if subfolders.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?folder_page={{ subfolders.next_page_number }}{% if files.number %}&file_page={{ files.number }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
 
+        <!-- Pagination Controls for Files -->
+        {% if files.has_other_pages %}
+            <nav aria-label="File pagination">
+                <ul class="pagination">
+                    {% if files.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?file_page={{ files.previous_page_number }}{% if folders.number %}&folder_page={{ folders.number }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for num in files.paginator.page_range %}
+                        <li class="page-item {% if files.number == num %}active{% endif %}">
+                            <a class="page-link" href="?file_page={{ num }}{% if folders.number %}&folder_page={{ folders.number }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if files.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?file_page={{ files.next_page_number }}{% if folders.number %}&folder_page={{ folders.number }}{% endif %}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
     {% else %}
         <p>Please <a href="{% url 'login' %}">login</a> to access your files and folders.</p>
     {% endif %}

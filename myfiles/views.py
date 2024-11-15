@@ -3,6 +3,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib import messages
 from django.contrib.auth import login
+from django.core.cache import cache
+from django.core.paginator import Paginator
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
@@ -33,7 +35,6 @@ def register(request):
         form = RegisterForm()
     return render(request, 'myfiles/register.html', {'form': form})
 
-from django.core.cache import cache
 @login_required
 def HomeView(request):
     cache_key = f'root_folders_{request.user.id}'
@@ -43,7 +44,11 @@ def HomeView(request):
         root_folders = Folder.objects.filter(owner=request.user, parent=None).select_related('parent')
         cache.set(cache_key, root_folders, 60 * 15)
     
-    return render(request, 'myfiles/home.html', {'folders': root_folders})
+    return render(
+        request, 
+        'myfiles/home.html', 
+        {'folders': root_folders}
+    )
 
 @login_required
 def FileUploadView(request, folder_id=None):
@@ -88,6 +93,16 @@ def view_folder(request, folder_id=None):
     query = request.GET.get('query')
     if query:
         files = files.filter(name__icontains=query)
+
+    # Paginate subfolders and files
+    folder_page_number = request.GET.get('folder_page', 1)
+    file_page_number = request.GET.get('file_page', 1)
+    
+    folder_paginator = Paginator(subfolders, 10)
+    file_paginator = Paginator(files, 10) 
+    
+    subfolders = folder_paginator.get_page(folder_page_number)
+    files = file_paginator.get_page(file_page_number)
 
     # Generate breadcrumbs for navigation
     breadcrumbs = []
@@ -151,14 +166,16 @@ def create_folder(request, folder_id=None):
 
 
 def delete_folder(request, id):
-    Folder.objects.filter(id=id, owner=request.user).delete()
+    folder = get_object_or_404(Folder, id=id)
+    folder.delete()
     messages.success(request, "Folder deleted successfully.")
     return redirect("home")
 
 
 def delete_file(request, id):
-    File.objects.filter(id=id, owner=request.user).delete()
-    messages.success(request, "File deleted successfully.")
+    file = get_object_or_404(File, id=id)
+    file.delete()
+    messages.success(request, "file deleted successfully.")
     return redirect("home")
 
 @login_required
