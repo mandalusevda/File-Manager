@@ -1,9 +1,4 @@
 import json
-from django.shortcuts import (
-    render, 
-    redirect, 
-    get_object_or_404
-)
 from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib import messages
@@ -12,6 +7,11 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import (
+    render, 
+    redirect, 
+    get_object_or_404
+)
 
 from .models.Folder import Folder
 from .models.File import File
@@ -33,9 +33,16 @@ def register(request):
         form = RegisterForm()
     return render(request, 'myfiles/register.html', {'form': form})
 
+from django.core.cache import cache
 @login_required
 def HomeView(request):
-    root_folders = Folder.objects.filter(owner=request.user, parent=None).select_related('parent')
+    cache_key = f'root_folders_{request.user.id}'
+    root_folders = cache.get(cache_key)
+
+    if not root_folders:
+        root_folders = Folder.objects.filter(owner=request.user, parent=None).select_related('parent')
+        cache.set(cache_key, root_folders, 60 * 15)
+    
     return render(request, 'myfiles/home.html', {'folders': root_folders})
 
 @login_required
@@ -144,18 +151,15 @@ def create_folder(request, folder_id=None):
 
 
 def delete_folder(request, id):
-    folder = get_object_or_404(Folder, id=id)
-    folder.delete()
+    Folder.objects.filter(id=id, owner=request.user).delete()
     messages.success(request, "Folder deleted successfully.")
     return redirect("home")
 
 
 def delete_file(request, id):
-    file = get_object_or_404(File, id=id)
-    file.delete()
-    messages.success(request, "file deleted successfully.")
+    File.objects.filter(id=id, owner=request.user).delete()
+    messages.success(request, "File deleted successfully.")
     return redirect("home")
-
 
 @login_required
 @require_POST
