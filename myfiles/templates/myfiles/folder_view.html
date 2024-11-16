@@ -46,7 +46,7 @@
                 {% for subfolder in subfolders %}
                 <tr>
                     <td>
-                        <a href="{% url 'view_folder' subfolder.id %}">
+                        <a href="{% url 'view_folder' subfolder.id %}" class="folder-name" data-folder-id="{{ subfolder.id }}">
                             <img src="{% static 'folder_icon.png' %}" alt="Folder Icon" width="45">
                             {{ subfolder.name }}
                         </a>
@@ -69,7 +69,7 @@
                 {% for file in files %}
                 <tr>
                     <td>
-                        <a href="{{ file.file.url }}" target="_blank">
+                        <a href="{{ file.file.url }}" target="_blank" class="file-name" data-file-id="{{ file.id }}">
                             {% if file.file_type == "image" %}
                                 <img src="{{ file.file.url }}" alt="{{ file.name }}" width="30">
                             {% elif file.file_type == "video" %}
@@ -187,12 +187,20 @@
 </div>
 </body>
 <script>
+    function getCSRFToken() {
+        const cookieValue = document.cookie.match(/(^|;) ?csrftoken=([^;]*)(;|$)/);
+        return cookieValue ? cookieValue[2] : null;
+    }
+
+    //upload files
     $('#uploadFileModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget);  // Button that triggered the modal
         var folderId = button.data('folder-id');  // Extract folder ID from data-* attribute
         var actionUrl = "{% url 'upload' 0 %}".replace('0', folderId);  // Generate URL with folder ID
         $('#uploadForm').attr('action', actionUrl);  // Set form action
     });
+
+    //rename folder and files
     document.addEventListener('DOMContentLoaded', function () {
         const renameBtns = document.querySelectorAll('.rename-btn');
         const renameModal = new bootstrap.Modal(document.getElementById('renameModal'));
