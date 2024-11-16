@@ -20,7 +20,6 @@
 <div class="container mt-4">
     {% if user.is_authenticated %}
         <h2>My Library</h2> <br><br>
-        
         <form method="get" action="{% url 'library_view' %}">
             <div class="input-group mb-3">
                 <input type="text" name="query" class="form-control" placeholder="Search files..." value="{{ query }}">

@@ -14,7 +14,11 @@
         <h1 class="navbar-brand" href="{% url 'home' %}">File Manager</h1><br>
         <div class="navbar-nav ml-auto">
             {% if user.is_authenticated %}
+                {% if page_name == 'view_folder' and folder %}
+                <a href="{% url 'create_folder' folder_id=folder.id %}" class="btn btn-primary mb-3">Create Folder</a>
+                {% else %}
                 <a href="{% url 'create_folder_root' %}" class="btn btn-primary mb-3">Create Folder</a>
+                {% endif %}
                 <a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a>
             {% else %}
                 <a class="nav-item nav-link" href="{% url 'login' %}">Login</a>

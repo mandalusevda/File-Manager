@@ -117,6 +117,7 @@ def view_folder(request, folder_id=None):
         'subfolders': subfolders,
         'files': files,
         'breadcrumbs': breadcrumbs,
+        'page_name': 'view_folder'
     })
 
 @login_required
